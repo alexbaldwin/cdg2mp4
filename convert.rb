@@ -6,7 +6,8 @@ youtube_url = ARGV[1]
 
 # Download youtube video
 system "rm youtube.mp4"
-puts "youtube-dl \"#{youtube_url}\" -o background-720p --recode-video mp4 --postprocessor-args '-ss 20 -strict -2 -s hd720 -r 30'"
+system "youtube-dl \"#{youtube_url}\" -o youtube.mp4 -f mp4"
+system "ffmpeg -y -i youtube.mp4 -ss 20 -strict -2 -s hd720 -r 30 background-720p.mp4"
 
 # Combine CDG + MP3
 system "rm foreground-720p.mp4"
@@ -22,9 +23,15 @@ colors = keyframe_inspect.scan /#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/
 chroma = colors[0][0]
 
 # Figure out how long the song is
-seconds =  `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '#{song_name}.mp3'`
+mp3_seconds =  `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '#{song_name}.mp3'`
+mp4_seconds =  `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 background-720p.mp4`
 
-# TODO: If background-720p is not longer than mp3, we will need to loop and cut
+# If background-720p is shorter than mp3, we will need to loop
+if mp4_seconds < mp3_seconds
+  loops = mp3_seconds.to_i / mp4_seconds.to_i
+  system "ffmpeg -y  -i background-720p.mp4 -c copy background-720p.mkv"
+  system "ffmpeg -y -stream_loop #{loops.ceil} -i background-720p.mkv -c copy background-720p.mp4"
+end
 
 # Combine videos
 system "rm greenScreen.mp4"
