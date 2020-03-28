@@ -39,6 +39,6 @@ system "ffmpeg -y -i background-720p.mp4 -i foreground-720p.mp4 -filter_complex 
 
 # Add music back in (quicktime is fussy without the codec and pix_fmt flags)
 system "rm final.mp4"
-system "ffmpeg -y -i greenScreen.mp4 -i '#{song_name}.mp3' -t #{seconds.to_i} -vcodec libx264 -pix_fmt yuv420p final.mp4"
+system "ffmpeg -y -i greenScreen.mp4 -i '#{song_name}.mp3' -t #{mp3_seconds.to_i} -vcodec libx264 -pix_fmt yuv420p final.mp4"
 
 puts "All done 🎉"
